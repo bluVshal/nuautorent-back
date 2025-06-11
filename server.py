@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 import os
 from dotenv import load_dotenv
 from app.models.cars import db, Cars
+from app.utils.lib import to_dict
 
 
 load_dotenv()
@@ -17,6 +18,7 @@ app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET')
 
 db.init_app(app)
 
+
 @app.get('/cars')
 def carsRouteAccess():
     return 'Inside Cars'
@@ -25,9 +27,7 @@ def carsRouteAccess():
 @app.get('/cars/all')
 def getAllCars():
     cars = Cars.query.all()
-    for car in cars:
-        print(car.carChassisNumber)
-    return 'cars'
+    return jsonify([to_dict(car) for car in cars])
 
 
 @app.get('/')
@@ -37,4 +37,5 @@ def index():  # put application's code here
 
 if __name__ == '__main__':
     app.run()
+
 

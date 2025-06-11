@@ -1,0 +1,25 @@
+# to_dict, function that takes in a list of type Car, and adds it to a JSON object
+def to_dict(car):
+    return {
+        "carId": car.carId,
+        "carChassisNumber": car.carChassisNumber,
+        "carMake": car.carMake,
+        "carModel": car.carModel,
+        "carNTARegNumber": car.carNTARegNumber,
+        "carBuyDate": car.carBuyDate,
+        "carPrice": car.carPrice,
+        "carStatus": car.carStatus,
+        "carSoldDate": car.carSoldDate,
+        "carPhoto": car.carPhoto,
+        "carType": car.carType,
+        "isCarElectric": car.isCarElectric,
+        "isCarHybrid": car.isCarHybrid,
+        "carTransmission": car.carTransmission,
+        "carSeats": car.carSeats,
+        "carNoDoors": car.carNoDoors,
+        "carHP": car.carHP,
+        "carCo2Emission": car.carCo2Emission,
+        "active": car.active,
+        "carAddDate": car.carAddDate,
+        "carLastModDate": car.carLastModDate,
+    }

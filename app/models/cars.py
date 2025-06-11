@@ -4,21 +4,21 @@ from sqlalchemy import LargeBinary
 import enum
 
 
-class CarStatusEnum(enum.Enum):
+class CarStatusEnum(str, enum.Enum):
     Available = 'Available'
     Rented = 'Rented'
     Maintenance = 'Maintenance'
     Sold = 'Sold'
 
 
-class CarTypeEnum(enum.Enum):
+class CarTypeEnum(str, enum.Enum):
     Small = 'Small'
     Compact = 'Compact'
     Large = 'Large'
     Limousine = 'Limousine'
 
 
-class CarTransmissionTypeEnum(enum.Enum):
+class CarTransmissionTypeEnum(str, enum.Enum):
     AT = 'AT'
     MT = 'MT'
 
