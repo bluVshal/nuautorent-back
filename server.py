@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 import os
 from dotenv import load_dotenv
 from app.models.cars import db, Cars
+from app.models.users import Users
 from app.utils.lib import to_dict
 from flask_cors import CORS
 
@@ -29,6 +30,17 @@ def carsRouteAccess():
 def getAllCars():
     cars = Cars.query.all()
     return jsonify([to_dict(car) for car in cars])
+
+
+@app.get('/users')
+def usersRouteAccess():
+    return 'Inside Users'
+
+
+@app.get('/users/all')
+def getAllUsers():
+    users = Users.query.all()
+    return jsonify([to_dict(user) for user in users])
 
 
 @app.get('/')
