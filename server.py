@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from app.models.cars import db, Cars
 from app.models.users import Users
+from app.models.suppliers import Suppliers
 from app.utils.lib import to_dict
 from flask_cors import CORS
 
@@ -41,6 +42,16 @@ def usersRouteAccess():
 def getAllUsers():
     users = Users.query.all()
     return jsonify([to_dict(user) for user in users])
+
+@app.get('/suppliers')
+def suppliersRouteAccess():
+    return 'Inside Suppliers'
+
+
+@app.get('/suppliers/all')
+def getAllSuppliers():
+    suppliers = Suppliers.query.all()
+    return jsonify([to_dict(supplier) for supplier in suppliers])
 
 
 @app.get('/')
