@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from app.models.cars import db, Cars
 from app.models.users import Users
 from app.models.suppliers import Suppliers
+from app.models.maintenanceType import MaintenanceType
 from app.utils.lib import to_dict
 from flask_cors import CORS
 
@@ -43,6 +44,7 @@ def getAllUsers():
     users = Users.query.all()
     return jsonify([to_dict(user) for user in users])
 
+
 @app.get('/suppliers')
 def suppliersRouteAccess():
     return 'Inside Suppliers'
@@ -54,6 +56,17 @@ def getAllSuppliers():
     return jsonify([to_dict(supplier) for supplier in suppliers])
 
 
+@app.get('/maintenanceType')
+def maintenanceTypeRouteAccess():
+    return 'Inside Maintenance Type'
+
+
+@app.get('/maintenanceType/all')
+def getAllMaintenanceTypes():
+    maintenanceType = MaintenanceType.query.all()
+    return jsonify([to_dict(maintenanceT) for maintenanceT in maintenanceType])
+
+
 @app.get('/')
 def index():  # put application's code here
     return 'Welcome to NuAuto!'
@@ -61,5 +74,3 @@ def index():  # put application's code here
 
 if __name__ == '__main__':
     app.run()
-
-
