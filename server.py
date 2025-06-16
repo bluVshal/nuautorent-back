@@ -6,6 +6,7 @@ from app.models.users import Users
 from app.models.suppliers import Suppliers
 from app.models.maintenanceType import MaintenanceType
 from app.models.maintenanceAgency import MaintenanceAgency
+from app.models.customerLoyalty import CustomerLoyalty
 from app.utils.lib import to_dict
 from flask_cors import CORS
 
@@ -57,25 +58,35 @@ def getAllSuppliers():
     return jsonify([to_dict(supplier) for supplier in suppliers])
 
 
-@app.get('/maintenanceType')
+@app.get('/maintenancetype')
 def maintenanceTypeRouteAccess():
     return 'Inside Maintenance Type'
 
 
-@app.get('/maintenanceType/all')
+@app.get('/maintenancetype/all')
 def getAllMaintenanceTypes():
     maintenanceType = MaintenanceType.query.all()
     return jsonify([to_dict(maintenanceT) for maintenanceT in maintenanceType])
 
-@app.get('/maintenanceAgency')
+@app.get('/maintenanceagency')
 def maintenanceAgencyRouteAccess():
     return 'Inside Maintenance Agency'
 
 
-@app.get('/maintenanceAgency/all')
+@app.get('/maintenanceagency/all')
 def getAllMaintenanceAgencies():
     maintenanceAgency = MaintenanceAgency.query.all()
     return jsonify([to_dict(maintenanceA) for maintenanceA in maintenanceAgency])
+
+@app.get('/customerloyalty')
+def customerLoyaltyRouteAccess():
+    return 'Inside Customer Loyalty'
+
+
+@app.get('/customerloyalty/all')
+def getAllCustomerLoyalty():
+    customerLoyalty = CustomerLoyalty.query.all()
+    return jsonify([to_dict(customerLo) for customerLo in customerLoyalty])
 
 
 @app.get('/')
