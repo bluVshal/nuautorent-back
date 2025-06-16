@@ -5,6 +5,7 @@ from app.models.cars import db, Cars
 from app.models.users import Users
 from app.models.suppliers import Suppliers
 from app.models.maintenanceType import MaintenanceType
+from app.models.maintenanceAgency import MaintenanceAgency
 from app.utils.lib import to_dict
 from flask_cors import CORS
 
@@ -65,6 +66,16 @@ def maintenanceTypeRouteAccess():
 def getAllMaintenanceTypes():
     maintenanceType = MaintenanceType.query.all()
     return jsonify([to_dict(maintenanceT) for maintenanceT in maintenanceType])
+
+@app.get('/maintenanceAgency')
+def maintenanceAgencyRouteAccess():
+    return 'Inside Maintenance Agency'
+
+
+@app.get('/maintenanceAgency/all')
+def getAllMaintenanceAgencies():
+    maintenanceAgency = MaintenanceAgency.query.all()
+    return jsonify([to_dict(maintenanceA) for maintenanceA in maintenanceAgency])
 
 
 @app.get('/')
