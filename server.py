@@ -36,6 +36,14 @@ def getAllCars():
     return jsonify([to_dict(car) for car in cars])
 
 
+@app.get('/cars/short')
+def getSomeCars():
+    cars = Cars.query.with_entities(Cars.carModel, Cars.carMake).all()
+    for user in cars:
+        print(user.carModel, user.carMake)
+    return jsonify([to_dict(car) for car in cars])
+
+
 @app.get('/users')
 def usersRouteAccess():
     return 'Inside Users'
@@ -54,6 +62,12 @@ def suppliersRouteAccess():
 
 @app.get('/suppliers/all')
 def getAllSuppliers():
+    suppliers = Suppliers.query.all()
+    return jsonify([to_dict(supplier) for supplier in suppliers])
+
+
+@app.get('/suppliers/short')
+def getSomeSuppliers():
     suppliers = Suppliers.query.all()
     return jsonify([to_dict(supplier) for supplier in suppliers])
 
