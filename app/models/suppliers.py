@@ -12,5 +12,5 @@ class Suppliers(db.Model):
     supplierContactName = db.Column(db.String(250), nullable=False)
     supplierPhone = db.Column(db.Integer, nullable=False)
     active = db.Column(db.Boolean(), default=False)
-    carAddDate = db.Column(db.DateTime, default=datetime.utcnow)
-    carLastModDate = db.Column(db.DateTime, default=datetime.utcnow)
+    createdDate = db.Column(db.DateTime, default=datetime.utcnow)
+    lastModified = db.Column(db.DateTime, default=datetime.utcnow)
