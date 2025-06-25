@@ -44,6 +44,7 @@ class Cars(db.Model):
     carSeats = db.Column(db.Integer, nullable=False)
     carNoDoors = db.Column(db.Integer, nullable=False)
     carHP = db.Column(db.Integer, nullable=False)
+    carMileage = db.Column(db.Integer, nullable=False)
     carCo2Emission = db.Column(db.Integer, nullable=False)
     active = db.Column(db.Boolean(), default=False)
     carAddDate = db.Column(db.DateTime, default=datetime.utcnow)
