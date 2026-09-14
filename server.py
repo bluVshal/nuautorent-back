@@ -3,15 +3,26 @@ import os
 from flask import Flask, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 from app.extensions import db, bcrypt, limiter
-from app.models.cars import Cars
+from app.models.cars import (
+    Cars,
+    CarStatusEnum,
+    CarTypeEnum,
+    CarTransmissionTypeEnum,
+)
 from app.models.users import Users
 from app.models.suppliers import Suppliers
 from app.models.maintenanceType import MaintenanceType
 from app.models.maintenanceAgency import MaintenanceAgency
 from app.models.customerLoyalty import CustomerLoyalty
+from app.models.customers import Customers
+from app.models.booking import Booking
+from app.models.rental import Rental
+from app.models.maintenance import Maintenance
 from app.utils.lib import to_dict
+from app.utils.query import arg, like, bool_arg, parse_date
 from app.middleware.auth import token_required, roles_required
 from app.middleware.security_headers import register_security_headers
 from app.routes.auth import auth_bp
@@ -52,6 +63,7 @@ app.config["JWT_SECRET_KEY"] = jwt_secret
 db.init_app(app)
 bcrypt.init_app(app)
 limiter.init_app(app)
+migrate = Migrate(app, db)
 
 # --- Security response headers ----------------------------------------------
 register_security_headers(app)
@@ -82,7 +94,32 @@ def getAllCars():
 @app.get("/cars/short")
 @token_required
 def getSomeCars():
-    cars = Cars.query.with_entities(Cars.carModel, Cars.carMake).all()
+    q = Cars.query
+    q = like(q, Cars.carMake, arg("carMake"))
+    q = like(q, Cars.carModel, arg("carModel"))
+    q = like(q, Cars.carNTARegNumber, arg("carNTARegNumber"))
+
+    # Enum filters: ignore an unrecognized value rather than erroring.
+    for param, column, enum_cls in (
+        ("carType", Cars.carType, CarTypeEnum),
+        ("carStatus", Cars.carStatus, CarStatusEnum),
+        ("carTransmission", Cars.carTransmission, CarTransmissionTypeEnum),
+    ):
+        value = arg(param)
+        if value:
+            try:
+                q = q.filter(column == enum_cls(value))
+            except ValueError:
+                pass
+
+    electric = bool_arg("isCarElectric")
+    if electric is not None:
+        q = q.filter(Cars.isCarElectric == electric)
+    hybrid = bool_arg("isCarHybrid")
+    if hybrid is not None:
+        q = q.filter(Cars.isCarHybrid == hybrid)
+
+    cars = q.with_entities(Cars.carModel, Cars.carMake).all()
     return jsonify([{"carModel": c.carModel, "carMake": c.carMake} for c in cars])
 
 
@@ -104,7 +141,15 @@ def getAllSuppliers():
 @app.get("/suppliers/short")
 @token_required
 def getSomeSuppliers():
-    suppliers = Suppliers.query.all()
+    q = Suppliers.query
+    q = like(q, Suppliers.supplierName, arg("supplierName"))
+    q = like(q, Suppliers.supplierAddress, arg("supplierAddress"))
+    q = like(q, Suppliers.supplierEmail, arg("supplierEmail"))
+    q = like(q, Suppliers.supplierContactName, arg("supplierContactName"))
+    phone = arg("supplierPhone")
+    if phone and phone.isdigit():
+        q = q.filter(Suppliers.supplierPhone == int(phone))
+    suppliers = q.all()
     return jsonify([to_dict(supplier) for supplier in suppliers])
 
 
@@ -159,32 +204,115 @@ def getSomeCustomerLoyalty():
     return jsonify([to_dict(item) for item in loyalty])
 
 
-# --- Stub endpoints: these resources have no backing model yet. They return an
-# empty list (rather than 404) so the frontend search pages work today.
-# TODO: add Customers / Booking / Rental / Maintenance-record models and replace
-# these with real queries (see docs/SECURITY.md "Known limitations").
+# --- Customers --------------------------------------------------------------
+@app.get("/customers/all")
+@token_required
+def getAllCustomers():
+    customers = Customers.query.all()
+    return jsonify([to_dict(c) for c in customers])
+
+
 @app.get("/customers/short")
 @token_required
 def getSomeCustomers():
-    return jsonify([])
+    q = Customers.query
+    q = like(q, Customers.customerFName, arg("customerFName"))
+    q = like(q, Customers.customerLName, arg("customerLName"))
+    q = like(q, Customers.customerMName, arg("customerMName"))
+    q = like(q, Customers.customerOName, arg("customerOName"))
+    q = like(q, Customers.customerAddress, arg("customerAddress"))
+    q = like(q, Customers.customerEmail, arg("customerEmail"))
+    q = like(q, Customers.customerPhone, arg("customerPhone"))
+    customers = q.all()
+    return jsonify([to_dict(c) for c in customers])
+
+
+# --- Booking ----------------------------------------------------------------
+@app.get("/booking/all")
+@token_required
+def getAllBookings():
+    bookings = Booking.query.all()
+    return jsonify([to_dict(b) for b in bookings])
 
 
 @app.get("/booking/short")
 @token_required
 def getSomeBookings():
-    return jsonify([])
+    q = Booking.query
+    reg = arg("carRegNo")
+    if reg:
+        q = q.join(Cars, Cars.carId == Booking.carId).filter(
+            Cars.carNTARegNumber.ilike(f"%{reg}%")
+        )
+    name = arg("customerName")
+    if name:
+        q = q.join(Customers, Customers.customerId == Booking.customerId).filter(
+            Customers.customerFName.ilike(f"%{name}%")
+            | Customers.customerLName.ilike(f"%{name}%")
+        )
+    pickup = parse_date(arg("bookingPickUpDate"))
+    if pickup:
+        q = q.filter(Booking.bookingPickUpDate >= pickup)
+    return_date = parse_date(arg("bookingReturnDate"))
+    if return_date:
+        q = q.filter(Booking.bookingReturnDate <= return_date)
+    bookings = q.all()
+    return jsonify([to_dict(b) for b in bookings])
+
+
+# --- Rental -----------------------------------------------------------------
+@app.get("/rental/all")
+@token_required
+def getAllRentals():
+    rentals = Rental.query.all()
+    return jsonify([to_dict(r) for r in rentals])
 
 
 @app.get("/rental/short")
 @token_required
 def getSomeRentals():
-    return jsonify([])
+    q = Rental.query
+    reg = arg("carRegNo")
+    if reg:
+        q = q.join(Cars, Cars.carId == Rental.carId).filter(
+            Cars.carNTARegNumber.ilike(f"%{reg}%")
+        )
+    name = arg("customerName")
+    if name:
+        q = q.join(Customers, Customers.customerId == Rental.customerId).filter(
+            Customers.customerFName.ilike(f"%{name}%")
+            | Customers.customerLName.ilike(f"%{name}%")
+        )
+    pickup = parse_date(arg("rentalPickupDate"))
+    if pickup:
+        q = q.filter(Rental.rentalPickupDate >= pickup)
+    return_date = parse_date(arg("rentalReturnDate"))
+    if return_date:
+        q = q.filter(Rental.rentalReturnDate <= return_date)
+    rentals = q.all()
+    return jsonify([to_dict(r) for r in rentals])
+
+
+# --- Maintenance records ----------------------------------------------------
+@app.get("/maintenance/all")
+@token_required
+def getAllMaintenance():
+    records = Maintenance.query.all()
+    return jsonify([to_dict(m) for m in records])
 
 
 @app.get("/maintenance/short")
 @token_required
 def getSomeMaintenance():
-    return jsonify([])
+    q = Maintenance.query
+    start = parse_date(arg("maintenanceStartDate"))
+    if start:
+        q = q.filter(Maintenance.maintenanceStartDate >= start)
+    end = parse_date(arg("maintenanceEndDate"))
+    if end:
+        q = q.filter(Maintenance.maintenanceEndDate <= end)
+    records = q.all()
+    return jsonify([to_dict(m) for m in records])
 
 
 if __name__ == "__main__":
