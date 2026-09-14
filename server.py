@@ -3,6 +3,7 @@ import os
 from flask import Flask, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 from app.extensions import db, bcrypt, limiter
 from app.models.cars import Cars
@@ -11,6 +12,10 @@ from app.models.suppliers import Suppliers
 from app.models.maintenanceType import MaintenanceType
 from app.models.maintenanceAgency import MaintenanceAgency
 from app.models.customerLoyalty import CustomerLoyalty
+from app.models.customers import Customers
+from app.models.booking import Booking
+from app.models.rental import Rental
+from app.models.maintenance import Maintenance
 from app.utils.lib import to_dict
 from app.middleware.auth import token_required, roles_required
 from app.middleware.security_headers import register_security_headers
@@ -52,6 +57,7 @@ app.config["JWT_SECRET_KEY"] = jwt_secret
 db.init_app(app)
 bcrypt.init_app(app)
 limiter.init_app(app)
+migrate = Migrate(app, db)
 
 # --- Security response headers ----------------------------------------------
 register_security_headers(app)
@@ -159,32 +165,64 @@ def getSomeCustomerLoyalty():
     return jsonify([to_dict(item) for item in loyalty])
 
 
-# --- Stub endpoints: these resources have no backing model yet. They return an
-# empty list (rather than 404) so the frontend search pages work today.
-# TODO: add Customers / Booking / Rental / Maintenance-record models and replace
-# these with real queries (see docs/SECURITY.md "Known limitations").
+# --- Customers --------------------------------------------------------------
+@app.get("/customers/all")
+@token_required
+def getAllCustomers():
+    customers = Customers.query.all()
+    return jsonify([to_dict(c) for c in customers])
+
+
 @app.get("/customers/short")
 @token_required
 def getSomeCustomers():
-    return jsonify([])
+    customers = Customers.query.all()
+    return jsonify([to_dict(c) for c in customers])
+
+
+# --- Booking ----------------------------------------------------------------
+@app.get("/booking/all")
+@token_required
+def getAllBookings():
+    bookings = Booking.query.all()
+    return jsonify([to_dict(b) for b in bookings])
 
 
 @app.get("/booking/short")
 @token_required
 def getSomeBookings():
-    return jsonify([])
+    bookings = Booking.query.all()
+    return jsonify([to_dict(b) for b in bookings])
+
+
+# --- Rental -----------------------------------------------------------------
+@app.get("/rental/all")
+@token_required
+def getAllRentals():
+    rentals = Rental.query.all()
+    return jsonify([to_dict(r) for r in rentals])
 
 
 @app.get("/rental/short")
 @token_required
 def getSomeRentals():
-    return jsonify([])
+    rentals = Rental.query.all()
+    return jsonify([to_dict(r) for r in rentals])
+
+
+# --- Maintenance records ----------------------------------------------------
+@app.get("/maintenance/all")
+@token_required
+def getAllMaintenance():
+    records = Maintenance.query.all()
+    return jsonify([to_dict(m) for m in records])
 
 
 @app.get("/maintenance/short")
 @token_required
 def getSomeMaintenance():
-    return jsonify([])
+    records = Maintenance.query.all()
+    return jsonify([to_dict(m) for m in records])
 
 
 if __name__ == "__main__":
