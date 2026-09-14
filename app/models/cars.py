@@ -1,7 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy import LargeBinary
 import enum
+
+from app.extensions import db
 
 
 class CarStatusEnum(str, enum.Enum):
@@ -21,9 +22,6 @@ class CarTypeEnum(str, enum.Enum):
 class CarTransmissionTypeEnum(str, enum.Enum):
     AT = 'AT'
     MT = 'MT'
-
-
-db = SQLAlchemy()
 
 
 class Cars(db.Model):

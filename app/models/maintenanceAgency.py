@@ -1,15 +1,13 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import enum
+
+from app.extensions import db
 
 
 class DesignationEnum(str, enum.Enum):
     Mr = 'Mr'
     Mrs = 'Mrs'
     Ms = 'Ms'
-
-
-db = SQLAlchemy()
 
 
 class MaintenanceAgency(db.Model):
